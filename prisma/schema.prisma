@@ -10,28 +10,106 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String   @db.VarChar(255)
-  content   String?
-  published Boolean  @default(false)
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-}
-
-model Profile {
-  id     Int     @id @default(autoincrement())
-  bio    String?
-  user   User    @relation(fields: [userId], references: [id])
-  userId Int     @unique
-}
-
 model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
-  posts   Post[]
-  profile Profile?
+  id                  Int                       @id @default(autoincrement())
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  nickName            String                    @unique
+  createGroups        ManagersOnGroups[]
+  participateGroups   ParticipiantsOnGroups[]
+  ParticipateMeetings ParticipiantsOnMeetings[]
+  UsersInBooks        UsersInBooks[]
+}
+
+model Group {
+  id            Int                     @id @default(autoincrement())
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  imageUrl      String?
+  description   String
+  likeCount     Int
+  location      String[]
+  participantId Int[]
+  bookId        Int[]
+  managers      ManagersOnGroups[]
+  Participiants ParticipiantsOnGroups[]
+}
+
+model ManagersOnGroups {
+  user       User     @relation(fields: [managerId], references: [id])
+  managerId  Int
+  group      Group    @relation(fields: [groupId], references: [id])
+  groupId    Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([managerId, groupId])
+}
+
+model ParticipiantsOnGroups {
+  user           User     @relation(fields: [participiantId], references: [id])
+  participiantId Int
+  group          Group    @relation(fields: [groupId], references: [id])
+  groupId        Int
+  assignedAt     DateTime @default(now())
+  assignedBy     String
+
+  @@id([participiantId, groupId])
+}
+
+model ParticipiantsOnMeetings {
+  user           User     @relation(fields: [participiantId], references: [id])
+  participiantId Int
+  meeting        Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId      Int
+  assignedAt     DateTime @default(now())
+  assignedBy     String
+
+  @@id([participiantId, meetingId])
+}
+
+model UsersInBooks {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  book       Book     @relation(fields: [bookId], references: [isbn])
+  bookId     String
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([userId, bookId])
+}
+
+model Meeting {
+  id                       Int                       @id @default(autoincrement())
+  description              String
+  date                     DateTime                  @default(now())
+  location                 String
+  maximumParticipantNumber Int
+  managerId                Int
+  participiantId           Int[]
+  bookId                   Int[]
+  commentId                Int[]
+  ParticipiantsOnMeetings  ParticipiantsOnMeetings[]
+}
+
+model Book {
+  isbn         String         @id
+  imageUrl     String?
+  author       String
+  publisher    String
+  description  String
+  score        Float
+  userId       Int[]
+  groupId      Int[]
+  meetingId    Int[]
+  commentId    Int[]
+  UsersInBooks UsersInBooks[]
+}
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  description String
+  score       Float
 }
