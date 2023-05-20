@@ -11,14 +11,15 @@ datasource db {
 }
 
 model User {
-  id                  Int                       @id @default(autoincrement())
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  nickName            String                    @unique
-  createGroups        ManagersOnGroups[]
-  participateGroups   ParticipiantsOnGroups[]
-  ParticipateMeetings ParticipiantsOnMeetings[]
-  UsersInBooks        UsersInBooks[]
+  id             Int                       @id @default(autoincrement())
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  nickName       String                    @unique
+  manageGroups   ManagersOnGroups[]
+  manageMeetings ManagersOnMeetings[]
+  groups         ParticipiantsOnGroups[]
+  meetings       ParticipiantsOnMeetings[]
+  books          UsersInBooks[]
 }
 
 model Group {
@@ -29,10 +30,47 @@ model Group {
   description   String
   likeCount     Int
   location      String[]
-  participantId Int[]
-  bookId        Int[]
+  meetings      Meeting[]
   managers      ManagersOnGroups[]
   Participiants ParticipiantsOnGroups[]
+  books         BooksOnGroups[]
+}
+
+model Meeting {
+  id                       Int                       @id @default(autoincrement())
+  description              String
+  date                     DateTime                  @default(now())
+  location                 String
+  maximumParticipantNumber Int
+  managers                 ManagersOnMeetings[]
+  participiant             ParticipiantsOnMeetings[]
+  books                    BooksOnMeetings[]
+  comments                 CommentsOnMeetings[]
+  Group                    Group                     @relation(fields: [groupId], references: [id])
+  groupId                  Int
+}
+
+model Book {
+  isbn        String            @id
+  imageUrl    String?
+  author      String
+  publisher   String
+  description String
+  score       Float
+  users       UsersInBooks[]
+  groups      BooksOnGroups[]
+  meetings    BooksOnMeetings[]
+  comments    CommentsOnBooks[]
+}
+
+model Comment {
+  id          Int                  @id @default(autoincrement())
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  description String
+  score       Float
+  meetings    CommentsOnMeetings[]
+  books       CommentsOnBooks[]
 }
 
 model ManagersOnGroups {
@@ -68,6 +106,62 @@ model ParticipiantsOnMeetings {
   @@id([participiantId, meetingId])
 }
 
+model BooksOnGroups {
+  book       Book     @relation(fields: [bookId], references: [isbn])
+  bookId     String
+  group      Group    @relation(fields: [groupId], references: [id])
+  groupId    Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([bookId, groupId])
+}
+
+model BooksOnMeetings {
+  book       Book     @relation(fields: [bookId], references: [isbn])
+  bookId     String
+  Meeting    Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId  Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+  groupId    Int?
+
+  @@id([bookId, meetingId])
+}
+
+model CommentsOnMeetings {
+  comment    Comment  @relation(fields: [commentId], references: [id])
+  commentId  Int
+  meeting    Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId  Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([commentId, meetingId])
+}
+
+model CommentsOnBooks {
+  comment    Comment  @relation(fields: [commentId], references: [id])
+  commentId  Int
+  book       Book     @relation(fields: [bookId], references: [isbn])
+  bookId     String
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([commentId, bookId])
+}
+
+model ManagersOnMeetings {
+  user       User     @relation(fields: [managerId], references: [id])
+  managerId  Int
+  meeting    Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId  Int
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([managerId, meetingId])
+}
+
 model UsersInBooks {
   user       User     @relation(fields: [userId], references: [id])
   userId     Int
@@ -77,39 +171,4 @@ model UsersInBooks {
   assignedBy String
 
   @@id([userId, bookId])
-}
-
-model Meeting {
-  id                       Int                       @id @default(autoincrement())
-  description              String
-  date                     DateTime                  @default(now())
-  location                 String
-  maximumParticipantNumber Int
-  managerId                Int
-  participiantId           Int[]
-  bookId                   Int[]
-  commentId                Int[]
-  ParticipiantsOnMeetings  ParticipiantsOnMeetings[]
-}
-
-model Book {
-  isbn         String         @id
-  imageUrl     String?
-  author       String
-  publisher    String
-  description  String
-  score        Float
-  userId       Int[]
-  groupId      Int[]
-  meetingId    Int[]
-  commentId    Int[]
-  UsersInBooks UsersInBooks[]
-}
-
-model Comment {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  description String
-  score       Float
 }
