@@ -26,10 +26,11 @@ model Group {
   id            Int                     @id @default(autoincrement())
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
+  title         String
+  description   String?
   imageUrl      String?
-  description   String
-  likeCount     Int
-  location      String[]
+  likeCount     Int                     @default(0)
+  location      String[]                @default([])
   meetings      Meeting[]
   managers      ManagersOnGroups[]
   Participiants ParticipiantsOnGroups[]
