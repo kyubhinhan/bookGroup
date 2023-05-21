@@ -4,6 +4,17 @@ import { PrismaClient } from "@prisma/client";
 const router: Router = express.Router();
 const prisma = new PrismaClient();
 
+// user 조회
+router.get("/", async (req, res) => {
+  const id = Number(req.query.id);
+  const user = await prisma.user.findUnique({
+    where: {
+      id: id,
+    },
+  });
+  res.json(user);
+});
+
 // 새로운 user 생성
 router.post("/", async (req, res) => {
   const { nickName } = req.body;
@@ -58,4 +69,4 @@ router.get("/duplicateCheck", async (req, res) => {
   res.json(user ? true : false);
 });
 
-module.exports = router;
+export default router;
