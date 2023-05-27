@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from "express";
+import express, { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 
 const router: Router = express.Router();
